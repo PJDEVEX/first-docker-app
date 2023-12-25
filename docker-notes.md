@@ -104,6 +104,17 @@ pjlinux@DESKTOP-OTE9RM3:~/first-docker-app$ docker-compose -f mongo.yaml down
 pjlinux@DESKTOP-OTE9RM3:~/first-docker-app$
 ```
 
+```ubuntu
+pjlinux@DESKTOP-OTE9RM3:~$ docker network ls
+NETWORK ID     NAME            DRIVER    SCOPE
+6f6791286299   bridge          bridge    local
+ec8cf2175142   host            host      local
+feae760d7442   mongo-network   bridge    local
+2d96cfffd178   none            null      local
+pjlinux@DESKTOP-OTE9RM3:~$ docker ps
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+pjlinux@DESKTOP-OTE9RM3:~$
+```
 ### Remove containers and images
 
 - `docker stop <ctn_name>` -  stop running ctn

@@ -28,19 +28,23 @@ app.get("/profile-picture", function (req, res) {
 let mongoUrlLocal = `mongodb://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@${process.env.MONGO_HOST}:${process.env.MONGO_PORT}`;
 
 // use when starting application as docker container
-let mongoUrlDocker = `mongodb://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@mongodb`;
+// let mongoUrlDocker = `mongodb://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@mongodb`;
+let mongoUrlDocker = `mongodb://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@${process.env.MONGO_HOST}:${process.env.MONGO_PORT}`;
+
 
 // pass these options to mongo client connect request to avoid DeprecationWarning for current Server Discovery and Monitoring engine
 let mongoClientOptions = { useNewUrlParser: true, useUnifiedTopology: true };
 
 // "user-account" in demo with docker. "my-db" in demo with docker-compose
-let databaseName = "my-db";
+// let databaseName = "my-db";
+let databaseName = "user-account";
 
 app.post("/update-profile", function (req, res) {
   let userObj = req.body;
 
   MongoClient.connect(
-    mongoUrlLocal,
+    // mongoUrlLocal,
+    mongoUrlDocker,
     mongoClientOptions,
     function (err, client) {
       if (err) throw err;
@@ -70,7 +74,8 @@ app.get("/get-profile", function (req, res) {
   let response = {};
   // Connect to the db
   MongoClient.connect(
-    mongoUrlLocal,
+    // mongoUrlLocal,
+    mongoUrlDocker,
     mongoClientOptions,
     function (err, client) {
       if (err) throw err;

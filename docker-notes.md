@@ -44,6 +44,44 @@ mongo-express
 - they config shall be inside
 
 ### Run the docker-compose
+
+`/home/pjlinux/first-docker-app/mongo.yaml`
+
+```yaml
+version: '3'
+
+services:
+  # my-app:
+  #   image: ${docker-registry}/my-app:1.0
+  #   ports:
+  #     - 3000:3000
+
+  mongodb:
+    image: mongo
+    ports:
+      - 27017:27017
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+    # volumes:
+    #   - mongo-data:/data/db
+
+  mongo-express:
+    image: mongo-express
+    # restart: always # fixes MongoNetworkError when mongodb is not ready when mongo-express starts
+    ports:
+      - 8080:8081
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=password
+      - ME_CONFIG_MONGODB_SERVER=mongodb
+      - ME_CONFIG_BASICAUTH_USERNAME=mg-ex-admin
+      - ME_CONFIG_BASICAUTH_PASSWORD=password
+
+# volumes:
+#   mongo-data:
+#     driver: local
+```
 `docker-compose -f <yamal_file> up` <br>
 
 `docker-compose -f mongo.yaml up`
@@ -119,3 +157,120 @@ pjlinux@DESKTOP-OTE9RM3:~$
 
 - `docker stop <ctn_name>` -  stop running ctn
 - `docker rm <ctn_name>` - remove ctn
+
+## Create own docker file
+
+It is better to define the env variables externally in a docker-compose file. 
+They can be easily modified
+
+|Image env blueprint| Dockerfile| comment|
+|---|---|---|
+|install node | ```FROM node```| start basing it on another image |
+|set env variables | <code> ENV MONGO_DB_USERNAME=admin \ MONGO_DB_PASSWORD=password </code>| It is better to define the env variables externally in a docker-compose file. They can be easily modified |
+|create/home/app folder | ```RUN mkdir -p home/app```| Using __Run__- canexecute any Linux command. The directory created inside a ctn, __NOT__ on laptop or host!|
+|copy current folders/ files to home/app|   `COPY . /home/app`|__COPY__ commnads are execute on the __HOST__machine:exclamation: __.__: source __/home/app__: target, You can copy files in the host to the inside of the ctn image(/home/app)  |
+|star the app with: "node server.js | ```CMD ["node","server.js"]```|Execute entry point Linux commands. This can be done becuase `Node` is pre-installed because of base image|
+
+### RUN vs CMD
+- `CMD` = entry point command. Can have only ONCE
+- `RUN` = can have multiple times in dockerfile
+
+__Dockerfile__
+
+- __NOTE__ __:__ Every base image is based on another Dockerfile
+e.g.: Node:20-alpine3.18 is buit on [its owned Dockerfile](https://github.com/nodejs/docker-node/blob/9ee59bf646e8be3ff6ae849e8119312f198be55c/21/alpine3.18/Dockerfile).
+
+__Image layers__
+| <p align="center">Image</p> |
+| --- |
+| <p align="center"><span style="color:red; font-size:18px;">&#9650;</span></p> |
+| <p align="center">Node:20-alpine3.18 </p> |
+| <p align="center"><span style="color:red; font-size:18px;">&#9650;</span></p> |
+| <p align="center">alpine:3.18 </p>|
+||
+
+```Dockerfile
+FROM node:20-alpine3.18
+
+ENV MONGO_DB_USERNAME=admin \
+    MONGO_DB_PASSWORD=passoword
+
+RUN mkdir /home/app
+
+COPY . /home/app
+
+CMD ["node", "server.js"]
+
+```
+
+__Create Docker image__<br>
+`docker build -t <image_name:tag or version> <location>`
+
+e.g.: `pjlinux@DESKTOP-OTE9RM3:~/first-docker-app$ docker build -t first-docker-app:1.0 .`
+
+- command to be executed in __project__ directory
+- `-t` : name of the image
+- `.`: in current directory
+
+__Rebuilding a docker image__
+if you find an error in the process, need to follow the below step to delete a docker image
+
+- e.g.: 
+- Due to the wrong location of the server.js file, docker run cannot be execurted correctly.
+- So need to rebuild the image
+
+```bash
+pjlinux@DESKTOP-OTE9RM3:~/first-docker-app$ docker run first-docker-app:1.0
+node:internal/modules/cjs/loader:1147
+  throw err;
+  ^
+
+Error: Cannot find module '/server.js'
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1144:15)
+    at Module._load (node:internal/modules/cjs/loader:985:27)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:135:12)
+    at node:internal/main/run_main_module:28:49 {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: []
+}
+
+Node.js v20.10.0
+```
+
+Correct the PATH
+
+
+1. Correct the path
+```Dockerfile 
+CMD ["node", "/home/app/server.js"]
+```
+2. First, remove the ctn before image. Otherwise,
+
+```bash 
+pjlinux@DESKTOP-OTE9RM3:~$ docker rmi e13d81857488
+Error response from daemon: conflict: unable to delete e13d81857488 (must be forced) - image is being used by stopped container c4a59b347ccb 
+```
+
+3. Remove ctn
+```docker rm <ctn_no>```
+
+```bash
+
+pjlinux@DESKTOP-OTE9RM3:~$ docker images
+REPOSITORY          TAG     IMAGE ID       CREATED          SIZE
+first-docker-app    1.0     e13d81857488   6 minutes ago    166MB
+
+pjlinux@DESKTOP-OTE9RM3:~$ docker ps -a | grep first-docker-app
+c4a59b347ccb   first-docker-app:1.0                                                                    "docker-entrypoint.s…"   4 minutes ago   Exited (1) 4 minutes ago             elated_aryabhata
+pjlinux@DESKTOP-OTE9RM3:~$ docker rm c4a59b347ccb
+c4a59b347ccb
+```
+
+4. Remove the img
+```docker rmi <img_#>```
+```bash
+
+pjlinux@DESKTOP-OTE9RM3:~$ docker rmi e13d81857488
+Untagged: first-docker-app:1.0
+Deleted: sha256:e13d81857488f19b02f5221e39eecac7cbfaaec37295259d021ef3f0cdc34ecf
+```

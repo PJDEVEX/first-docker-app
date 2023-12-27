@@ -8,17 +8,22 @@ services:
 
   mongodb:
     image: mongo
+    command: ["./wait-for-mongo.sh", "mongodb:27017", "--", "npm", "start"]
+    depends_on:
+      - mongodb
     ports:
       - 27017:27017
     environment:
       - MONGO_INITDB_ROOT_USERNAME=admin
       - MONGO_INITDB_ROOT_PASSWORD=password
-    # volumes:
-    #   - mongo-data:/data/db
+    volumes:
+      - mongo-data:/data/db
 
   mongo-express:
     image: mongo-express
     # restart: always # fixes MongoNetworkError when mongodb is not ready when mongo-express starts
+    depends_on:
+      - mongodb
     ports:
       - 8080:8081
     environment:
@@ -27,6 +32,6 @@ services:
       - ME_CONFIG_MONGODB_SERVER=mongodb
       - ME_CONFIG_BASICAUTH_USERNAME=mg-ex-admin
       - ME_CONFIG_BASICAUTH_PASSWORD=password
-# volumes:
-#   mongo-data:
-#     driver: local
+volumes:
+  mongo-data:
+    driver: local

@@ -29,7 +29,7 @@ let mongoUrlLocal = `mongodb://${process.env.MONGO_USER}:${process.env.MONGO_PAS
 
 // use when starting application as docker container
 // let mongoUrlDocker = `mongodb://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@mongodb`;
-let mongoUrlDocker = `mongodb://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@${process.env.MONGO_HOST}:${process.env.MONGO_PORT}`;
+let mongoUrlDocker = `mongodb://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@$mongodb`;
 
 // pass these options to mongo client connect request to avoid DeprecationWarning for current Server Discovery and Monitoring engine
 let mongoClientOptions = { useNewUrlParser: true, useUnifiedTopology: true };

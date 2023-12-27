@@ -1,10 +1,10 @@
-version: '3'
+version: "3"
 
 services:
   my-app:
     image: 363869887563.dkr.ecr.eu-north-1.amazonaws.com/first-docker-app:1.1
     ports:
-      3000:3000
+      - 3000:3000
 
   mongodb:
     image: mongo
@@ -27,7 +27,6 @@ services:
       - ME_CONFIG_MONGODB_SERVER=mongodb
       - ME_CONFIG_BASICAUTH_USERNAME=mg-ex-admin
       - ME_CONFIG_BASICAUTH_PASSWORD=password
-
 # volumes:
 #   mongo-data:
 #     driver: local

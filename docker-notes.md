@@ -950,7 +950,12 @@ __:exclamation: All the date in `mongo-data` now replcated in `/data/db` at the 
 - Restart the docker containers - `docker-compose -f mongo.yaml up`
 - check `localhost:8080`, now no database loss
 
-
-
 :trophy: it works:exclamation:
+
+### Docker volume location
+- to find the location of the volume in VM
+- depends on the OS
+    - Windows - `C:\programData\docker\volumes`
+    - Linux - `/var/lib/docker/volumes` >> `cfc1ab...ddf22/_data`
+    - Mac - `/var/lib/docker/volumes
 
